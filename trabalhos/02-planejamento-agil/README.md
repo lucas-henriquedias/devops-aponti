@@ -3,7 +3,7 @@
 > **Curso:** DevOps - Aponti  
 > **Professor:** Carlos  
 > **Aluno:** Lucas Henrique Dias de Medeiros  
-> **Grupo:** Pedro Henrique, Lucas Medeiros e Otávio Sousa
+> **Grupo:** Pedro Henrique, Lucas Henrique e Otávio Sousa
 
 ---
 
@@ -60,9 +60,9 @@ Durante a atividade foram definidos:
 
 ```text
 .
-├── README.md           # Apresentação do trabalho
-├── documentacao.pdf    # Documento completo desenvolvido pelo grupo
-└── apresentacao.pdf    # Slide da apresentação
+├── README.md                       # Apresentação do trabalho
+├── documentacao.pdf                # Documento completo desenvolvido pelo grupo
+└── slide-sistema-biblioteca.pdf    # Slide da apresentação
 ```
 
 ---
@@ -73,6 +73,14 @@ Durante a atividade foram definidos:
 - GitHub
 - Markdown
 - Trello
+
+---
+
+## 📌 Quadro Kanban
+
+Como parte do planejamento do projeto, foi elaborado um **Quadro Kanban** no Trello para organizar o backlog, distribuir responsabilidades entre os integrantes da equipe e acompanhar o andamento das tarefas durante o desenvolvimento da proposta. O quadro contempla a organização das tarefas, definição de prioridades, responsáveis e fluxo de desenvolvimento utilizando a metodologia Kanban.
+
+🔗 [**Acesse o quadro**](https://trello.com/invite/b/6a52a3f8c6a60af1646d0b2f/ATTIb74cfde1acdd5ff129b5436f0cb2a79037CD92E3/sistema-biblioteca-quadro-kanban)  
 
 ---
 
@@ -90,9 +98,11 @@ Cada integrante participou do planejamento e da elaboração da documentação c
 
 ## 📄 Documento completo
 
-Toda a documentação produzida durante a atividade encontra-se no arquivo:
+Os materiais produzidos durante a atividade estão disponíveis nos seguintes recursos:
 
-**`documentacao.pdf`**
+- 📄 **Documentação completa:** `documentacao.pdf`
+- 📑 **Slides da apresentação:** `slide-sistema-biblioteca.pdf`
+- 📌 [**Quadro Kanban no Trello**](https://trello.com/invite/b/6a52a3f8c6a60af1646d0b2f/ATTIb74cfde1acdd5ff129b5436f0cb2a79037CD92E3/sistema-biblioteca-quadro-kanban)
 
 ---
 
