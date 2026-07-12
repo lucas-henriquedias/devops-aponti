@@ -108,4 +108,3 @@ Este repositório faz parte da minha coleção de atividades desenvolvidas duran
 Este projeto está licenciado sob a **MIT License**.
 
 Consulte o arquivo [LICENSE](../LICENSE) para mais informações.
-````
