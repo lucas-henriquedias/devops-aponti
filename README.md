@@ -1,4 +1,3 @@
-````md
 # 🚀 Curso de DevOps - Aponti
 
 > Repositório dedicado às atividades, projetos e estudos desenvolvidos durante o **curso de DevOps da Aponti**.
@@ -62,4 +61,3 @@ Estudante de Ciência da Computação e entusiasta da área de Tecnologia da Inf
 
 GitHub: **https://github.com/lucas-henriquedias**
 Email: **lucasfaculdade2025@gmail.com**
-````
