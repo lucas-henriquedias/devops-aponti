@@ -86,5 +86,5 @@ Esta atividade permitiu compreender como a cultura DevOps pode solucionar proble
 
 ## 👨‍💻 Autor
 
-**Lucas Henrique Dias**
+**Lucas Henrique Dias de Medeiros**
 
