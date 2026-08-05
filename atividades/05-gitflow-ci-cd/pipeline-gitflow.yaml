@@ -1,0 +1,119 @@
+
+# Aluno: Lucas Henrique Dias de Medeiros.
+# Professor: Carlos Henrique.
+# ------------------------------------------------------------------------
+
+# "name" é o rótulo exibido na aba "Actions" do GitHub. Ele ão influência o 
+# funcionamento da pipeline, mas ajuda na organização quando existem várias 
+# pipelines no mesmo repositório.
+name: Pipeline CI/CD - Git Flow
+
+
+# O bloco "on" define os GATILHOS (eventos) que fazem a pipeline ser executada. Sem 
+# ele o workflow nunca dispara.
+on:
+
+  # O gatilho "push" dispara sempre que um commit é enviado (git push) para 
+  # as branches listadas abaixo. Aqui é onde o padrão de nomenclatura de 
+  # branches entra em ação, já que só reagimos a pushes nas branches que
+  # representam etapas oficiais do fluxo (main e developer) e nas branches
+  # de feature (feature/*), que são as branches de trabalho dos devs.
+  push:
+    branches:
+      - main          # Branch de Produção: código estável e já testado;
+      - developer     # Branch de Integração: onde as features se juntam;
+      - 'feature/**'  # Padrão para qualquer branch que comece com "feature/".
+
+      # OBS: "**" garante que subpastas de nomes também sejam capturadas.
+
+  # -------------------------------------------------------------------- 
+  # O gatilho "pull_request" dispara quando um Pull Request (PR) é aberto, 
+  # atualizado ou reaberto tendo como destino uma das branches listadas.
+  # Obs: Antes de aceitar um merge para main/developer, é uma boa prática 
+  # rodar os testes automaticamente no código do PR.
+  pull_request:
+    branches:
+      - main
+      - developer
+      - 'feature/**'
+
+    # "types" define quais ações do PR disparam o workflow. O GitHub, 
+    # por padrão, já usa opened, synchronize e reopened.
+    types:
+      - opened        # PR foi criado;
+      - synchronize   # novos commits foram adicionados ao PR;
+      - reopened      # um PR fechado foi reaberto.
+
+  # --------------------------------------------------------------------
+  # O "workflow_dispatch" permite executar a pipeline manualmente através 
+  # da interface do GitHub (botão "Run workflow"), pela API REST ou pela 
+  # GitHub CLI. É muito útil para deploys manuais e/ou testes pontuais sem
+  # precisar de um push ou PR.
+  workflow_dispatch:
+    inputs:
+      ambiente:
+        description: 'Ambiente de destino do deploy manual'
+        required: true
+        default: 'homologacao'
+        type: choice
+        options:
+          - homologacao
+          - producao
+
+  # --------------------------------------------------------------------
+  # O gatilho "schedule" permite agendar execuções automáticas usando sintaxe 
+  # CRON (em UTC), sendo útil para builds noturnos, verificações de dependências,
+  # limpeza de artefatos antigos, relatórios periódicos, etc.
+  # o formato CRON é: minuto hora dia-do-mes mes dia-da-semana
+  # --------------------------------------------------------------------
+  schedule:
+    - cron: '0 3 * * 1-5'   # Executa de segunda (1) a sexta (5), às 03:00 UTC.
+      
+  # --------------------------------------------------------------------
+  # O "release" dispara quando uma release é criada/publicada no repositório.
+  # É muito comum em pipelines de CD (Continuous Delivery), pois marca o momento
+  # de gerar/publicar artefatos versionados para uma nova versão oficial do software.
+  release:
+    types:
+      - published     # dispara apenas quando a release é publicada. Existem outros 
+                      #types como created, edited, deleted.)
+
+# ----------------------------------------------------------------------------
+# O bloco "jobs" define os trabalhos que a pipeline vai executar quando qualquer
+# um dos gatilhos acima for disparado. Cada job roda em uma máquina virtual (VM) 
+# isolada.
+jobs:
+
+  # Nome do job (pode ser qualquer string sem espaço).
+  build-e-testes:
+
+    # "runs-on" define o sistema operacional ou imagem do VM.
+    # ubuntu-latest é a opção mais comum, leve e gratuita para repositórios públicos.
+    runs-on: ubuntu-latest
+
+    # "steps" é a lista ordenada de passos executados sequencialmente dentro do job.
+    #  Cada "- name" é um passo.
+    steps:
+
+      # "uses" indica que estamos usando uma Action pronta da comunidade/GitHub.
+      # "actions/checkout" é responsável por clonar o repositório dentro do VM,
+      # sem ele nenhum outro passo teria acesso ao código-fonte.
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      # "actions/setup-node" prepara o ambiente com a versão do Node.js especificada.
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # "run" executa comandos shell diretamente na VM. Aqui instalamos as
+      # dependências do projeto.
+      - name: Instalar dependências do projeto
+        run: npm install
+
+      # Garantir que todo push/PR seja validado automaticamente antes de avançar
+      # no fluxo do Git Flow (feature -> developer -> main).
+      - name: Rodar testes
+        run: npm test
+
