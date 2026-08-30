@@ -1,0 +1,22 @@
+name: Pipeline 3 - Gestao de Issues
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  classificar-issue:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write # Permissao para o bot editar as issues do projeto
+
+    steps:
+      - name: Adicionar Label e Atribuir Responsavel
+        env:
+          # O token e gerado automaticamente pelo GitHub para autenticar o comando
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue edit ${{ github.event.issue.number }} \
+            --add-label "documentation" \
+            --add-assignee "${{ github.actor }}" \
+            --repo ${{ github.repository }}
