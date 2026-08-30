@@ -1,0 +1,194 @@
+
+# "name" é o rótulo exibido na aba "Actions" do GitHub. Ele não influencia o
+# funcionamento da pipeline, só ajuda na organização.
+name: Pipeline CI/CD - Jobs
+
+# Gatilhos básicos, só pra pipeline ter quando disparar.
+on:
+  push:
+    branches:
+      - main
+      - developer
+      - 'feature/**'
+  pull_request:
+    branches:
+      - main
+      - developer
+      - 'feature/**'
+  workflow_dispatch:
+
+
+# ---------------------------------------------------------------
+# O bloco "jobs" é o conjunto de trabalhos que a pipeline executa. Cada job:
+#   - roda em uma máquina virtual (VM) isolada e nova;
+#   - por padrão roda em paralelo com os demais jobs;
+#   - só roda em sequência com outro se usarmos "needs";
+#   - não compartilha arquivos com outros jobs automaticamente;
+jobs:
+
+  # 1. build-e-testes: instala dependências e roda os testes. É o job mais 
+  # usado em qualquer pipeline, independente da stack.
+  build-e-testes:
+
+    # "runs-on" define o sistema operacional/imagem da VM.
+    runs-on: ubuntu-latest
+
+    # "strategy.matrix" faz o mesmo job rodar várias vezes, uma vez pra
+    # cada combinação de valores definida. É um dos recursos mais úteis 
+    # do GitHub Actions, garantindo que o código funciona em múltiplos 
+    # ambientes sem precisar copiar e colar o job várias vezes.
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]
+      # "fail-fast: true" (padrão) cancela as outras combinações da
+      # matriz assim que uma delas falhar. Já "false" roda todas as 
+      # versões até o fim e mostre todos os erros de uma vez.
+      fail-fast: false
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      # "${{ matrix.node-version }}" pega o valor da matriz na iteração atual.
+      - name: Configurar Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'   # cacheia dependências do npm entre execuções,
+                         # deixando a pipeline mais rápida.
+
+      - name: Instalar dependências do projeto
+        run: npm install
+
+      - name: Rodar testes
+        run: npm test
+
+  # ---------------------------------------------------------------  
+  # 2. lint: verifica se o código segue o padrão de estilo definido no projeto. 
+  # Não testa se o código funciona, testa apenas se ele está bem escrito e 
+  # padronizado. É recomendado rodar separado do job de teste, pois deixa os 
+  # logs mais organizados e permite ver rapidamente se o problema foi de padrão 
+  # ou de lógica.
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar dependências
+        run: npm install
+
+      - name: Rodar linter
+        run: npm run lint
+
+# ---------------------------------------------------------------
+# 3. analise-seguranca: usa o CodeQL (ferramenta de análise estática de
+  # segurança mantida pelo próprio GitHub) pra procurar vulnerabilidades
+  # conhecidas no código automaticamente.
+  analise-seguranca:
+    runs-on: ubuntu-latest
+    
+    # "permissions" define o que o Github_Token pode fazer dentro deste
+    # job. O CodeQL precisa de permissão de leitura no código e de
+    # escrita nos alertas de segurança.
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Inicializar CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript   # ajustar para a(s) linguagem(ns) do projeto
+
+      - name: Rodar análise do CodeQL
+        uses: github/codeql-action/analyze@v3
+
+  # ---------------------------------------------------------------
+  # 4. build-docker: empacota a aplicação em uma imagem Docker e publica no
+  # GitHub Container Registry. Muito comum em pipelines de Continuous Delivery,
+  # já que a imagem gerada é o artefato final que será implantado depois.
+  build-docker:
+
+  # "needs" faz este job esperar os jobs de build-e-testes e lint terminarem 
+  # com sucesso antes de começar, já que não faz sentido gerar uma imagem
+  # Docker de um código que nem passou nos testes.
+    needs: [build-e-testes, lint]
+    runs-on: ubuntu-latest
+
+    # "if" condiciona a execução do job. Aqui, só publica a imagem quando
+    # o push for direto na branch main.
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    permissions:
+      contents: read
+      packages: write 
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Login no GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build e push da imagem Docker
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ github.repository }}:latest
+
+  # ---------------------------------------------------------------
+  # 5. deploy: publica a aplicação em um ambiente.
+  deploy:
+
+  # "needs" garante que só roda depois que a imagem Docker foi gerada
+  # com sucesso.
+    needs: build-docker
+    runs-on: ubuntu-latest
+
+  # "environment" é um recurso do GitHub Actions que permite:
+  #   - exigir aprovação manual de alguém antes do job rodar;
+  #   - guardar secrets exclusivos daquele ambiente;
+  #   - mostrar o histórico de deploys na aba "Environments" do repositório.
+    environment:
+      name: producao
+      url: https://minhaplicacao_maneira.exemplo.com   
+
+    steps:
+      - name: Deploy da aplicação
+        run: echo "Publicando nova versão em produção..."
+
+  # ---------------------------------------------------------------
+  # 6. notificar-equipe: avisa a equipe sobre o resultado da pipeline. Muito 
+  # útil em times reais, pra não precisar ficar checando a aba Actions manualmente.
+  notificar-equipe:
+
+  # "needs" com todos os jobs anteriores com "if: always()" faz este job rodar 
+  # sempre no final, mesmo que algum job anterior tenha falhado - assim a equipe
+  # é avisada tanto de sucesso quanto de falha.
+    needs: [build-e-testes, lint, analise-seguranca, build-docker, deploy]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enviar notificação para o Slack
+        uses: slackapi/slack-github-action@v2
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": "Pipeline `${{ github.workflow }}` finalizada com status: ${{ job.status }}"
+            }
+

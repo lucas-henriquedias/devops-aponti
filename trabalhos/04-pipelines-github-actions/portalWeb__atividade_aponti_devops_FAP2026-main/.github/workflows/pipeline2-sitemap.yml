@@ -1,0 +1,36 @@
+name: Pipeline 2 - Gerador de Sitemap
+
+on:
+  schedule:
+    # Executa todos os dias as 23:00 (Nota: o cron usa o fuso horario UTC)
+    - cron: "0 23 * * *"
+
+jobs:
+  atualizar-sitemap:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Permissao de escrita necessaria para o bot fazer o commit
+
+    steps:
+      - name: Realizar Checkout do codigo
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Instalar dependencias
+        run: npm install
+
+      - name: Executar script do Sitemap
+        run: npm run sitemap
+
+      - name: Adicionar, Commitar e Fazer Push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          # O '|| echo' evita que a pipeline falhe caso nao haja mudanças reais no sitemap
+          git commit -m "docs: atualizacao automatica do sitemap" || echo "Nenhuma mudanca para commitar"
+          git push
