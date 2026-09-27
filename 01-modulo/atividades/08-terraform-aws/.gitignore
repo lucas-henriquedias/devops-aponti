@@ -1,0 +1,13 @@
+# Ignora arquivos de estado local gerados pelo Terraform
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
+# Ignora pastas de cache e plugins que são baixados no 'terraform init'
+.terraform/
+.terraform.lock.hcl
+
+# Ignora arquivos que possam conter senhas ou chaves
+*.tfvars
+*.tfvars.json
+
