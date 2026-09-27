@@ -1,0 +1,14 @@
+# Arquivos de estado local do Terraform (contêm dados sensíveis do ambiente)
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
+# Pastas de cache e plugins do Terraform baixados no 'terraform init'
+.terraform/
+.terraform.lock.hcl
+
+# Arquivo de variáveis com dados reais do usuário (Segurança)
+terraform.tfvars
+*.tfvars.json
+
+

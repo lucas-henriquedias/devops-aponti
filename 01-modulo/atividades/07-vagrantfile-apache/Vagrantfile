@@ -1,0 +1,21 @@
+Vagrant.configure("2") do |config|
+  # 1. Definir a imagem da máquina virtual (Ubuntu 20.04)
+  config.vm.box = "ubuntu/focal64"
+
+  # 2. Definir redirecionamento de porta (Acessar porta 8080 no seu PC envia para porta 80 da VM)
+  config.vm.network "forwarded_port", guest: 80, host: 8080
+
+  # 3. Definir memória e núcleos de CPU
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "1024" # 1 GB de RAM
+    vb.cpus = 2        # 2 Núcleos de CPU
+  end
+
+  # 4. Instalação e execução automática do Apache2 na VM
+  config.vm.provision "shell", inline: <<-SHELL
+    sudo apt-get update
+    sudo apt-get install -y apache2
+    sudo systemctl enable apache2
+    sudo systemctl start apache2
+  SHELL
+end
