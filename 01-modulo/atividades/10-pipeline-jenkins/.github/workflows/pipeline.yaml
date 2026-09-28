@@ -1,37 +1,41 @@
-name: Pipeline CI Node.js
+name: Pipeline CI Node.js  # define o nome do workflow.
 
-on:
+on:  # informa quando a pipeline roda.
   push:
     branches: [ "main", "master" ]
   pull_request:
     branches: [ "main", "master" ]
 
-jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
+# |-> agrupa todos os trabalhos da pipeline. Se houver mais de um, o Github executa em paralelo.
+jobs: 
+  build-and-test:  # é o nome/identificador técnico para este job específico.
+    runs-on: ubuntu-latest  #escolhe a VM onde os comandos vão rodar. Neste caso: ubuntu.
 
-    steps:
+    steps:  # contém a sequencia de tarefas executadas em ordem dentro da VM.
       # 1. Checkout do código-fonte
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Checkout repository  # dá um nome legível para o passo.
+        uses: actions/checkout@v4  # usa um Action pronta do Marketplace(actions/checkout na vers 4).
 
       # 2. Instalar e configurar o Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
+        with:    # abre o bloco de parâmetros para personalizar a Action.
+          node-version: '18'  # define exatamente a versão 18.
+          cache: 'npm'      #ativa o cache de pacotes de npm.
+          # |-> Obs: nas próximas vezes q pipeline rodar, Github reutiliza os arquivos baixados.
 
       # 3. Instalar dependências
       - name: Install dependencies
-        run: npm ci
+        run: npm ci    # executa um comando no terminal Linux.
+        # |-> 'npm ci' lê o arquivo e instala as dependências exatamente nas versões especificadas.
 
       # 4. Build da aplicação (se houver script de build configurado)
       - name: Build project
-        run: npm run build --if-present
+        run: npm run build --if-present  # executa o script de compilação/build definido.
+        # |-> '--if-present' garante q, se n tiver uma etapa de build config, o comando n gera erro, nem quebra.
 
       # 5. Executar os testes
       - name: Run tests
-        run: npm test
+        run: npm test  # executa a suítes de testes automatizados do projeto.
 
 
