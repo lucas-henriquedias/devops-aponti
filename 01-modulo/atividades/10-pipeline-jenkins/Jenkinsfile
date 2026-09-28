@@ -1,48 +1,50 @@
 
-pipeline {
-    agent any
+pipeline {    // bloco raiz obg em qualquer pipeline declarativa.
+    agent any    // informa em qual executor/maquina o trabalho deve ser processado.
+    // |-> instrui o Jenkins a alocar qualquer executor que estiver livre para rodar a pipeline.
 
-    tools {
-        // Certifique-se de que a versão do Node.js configurada no seu Jenkins possui este nome
-        nodejs 'NodeJS' 
-    }
+    tools {    // Injeta ferraments pré-coniguradas no jenkins direto na variavel de ambiente da pipeline.
+        nodejs 'NodeJS'
+    }    // |-> permite que comandos 'node' e 'npm' funcione sem precisar instalar manualmente.
 
-    stages {
-        stage('Instalar Dependências') {
-            steps {
-                echo 'Instalando dependências do projeto...'
-                sh 'npm install'
+    stages {    // agrupa todas as fases lógicas do processo CI/CD.
+        stage('Instalar Dependências') {    // define o nome visual q aparecerá no painel da pipeline.
+            
+            steps {    // contém as tarefas individuais a serem executadas sequencialmente nesta etapa.
+                
+                echo 'Instalando dependências do projeto...'    // imprime mensagens nos logs do console Jenkins.
+                sh 'npm install'    // executa um comando Shell no SO.
             }
         }
 
         stage('Build') {
             steps {
                 echo 'Executando o Build do projeto...'
-                // Se o seu package.json não tiver o script de build, o comando 'npm run build --if-present' evita erros
-                sh 'npm run build --if-present'
-            }
+                sh 'npm run build --if-present'    // |-> executa o script de build configurado na aplicação.
+            }    // |-> a flag '--if-present' é uma proteção. Caso n haja instruções, o npm ignora sem erro.
         }
 
         stage('Testes') {
             steps {
                 echo 'Executando os testes unitários...'
-                sh 'npm test'
+                sh 'npm test'    // dispara a suíte de testes unitários ou de integração.
             }
         }
     }
 
-    post {
-        success {
+    post {    // bloco que executa ações condicionais de acordo com o restultado final dos stages.
+        
+        success {    // executado apenas de todos os stages anteriores forem concluídos com sucesso.
             echo '==================================================='
             echo ' SUCCESS: O pipeline foi executado com sucesso!'
             echo '==================================================='
         }
-        failure {
+        failure {    // executado se qualquer um dos stages falhar.
             echo '==================================================='
             echo ' FAILURE: Houve uma falha na execução do pipeline.'
             echo '==================================================='
         }
-        always {
+        always {    //executado independentemente do resultado.
             echo 'Limpando o ambiente/Concluindo execução.'
         }
     }
