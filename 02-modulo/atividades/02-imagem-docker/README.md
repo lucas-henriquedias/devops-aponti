@@ -1,4 +1,4 @@
-# Atividade 2: Imagem Docker publicada no Docker Hub
+# Imagem Docker publicada no Docker Hub
 
 Criação de um app simples em Python, com um Dockerfile, e publicação da imagem no Docker Hub.
 
