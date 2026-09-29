@@ -13,8 +13,5 @@ WORKDIR /app
 # Copia o app da minha máquina para dentro da imagem
 COPY app.py .
 
-# Documenta a porta usada pelo app (para acessar, use -p no docker run)
-EXPOSE 8000
-
 # Comando executado quando o container iniciar
 CMD ["python3", "app.py"]
