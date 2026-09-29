@@ -1,4 +1,4 @@
-# Atividade 1: Dockerfile comentado
+# Dockerfile comentado
 
 Pesquisa sobre as principais instruções de um Dockerfile, com um arquivo de exemplo explicado em comentários.
 
